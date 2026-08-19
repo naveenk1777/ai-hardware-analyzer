@@ -1,0 +1,24 @@
+import requests
+import time
+import random
+
+API_URL = "RENDER_API_URL"
+
+print("Starting fake ESP32 Hardware Stream...")
+battery = 100
+
+while True:
+    payload = {
+        "device_id": "HELMET_ESP32_01",
+        "irstus": random.choice([True, False, False]), # Mostly false
+        "batteryper": battery
+    }
+    
+    try:
+        response = requests.post(API_URL, json=payload)
+        print(f"Sent: {payload} | Status: {response.status_code}")
+    except Exception as e:
+        print("API is offline.")
+        
+    battery = max(0, battery - 1)
+    time.sleep(2) 
