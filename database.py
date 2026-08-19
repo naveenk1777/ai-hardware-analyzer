@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine,AsyncSession,async_sessio
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column,DateTime,Integer,String,Boolean
 import datetime
-impport os
+import os
 
 databaseurl=os.getenv("DATABASE_URL")
 
