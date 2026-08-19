@@ -2,7 +2,7 @@ import requests
 import time
 import random
 
-API_URL = "RENDER_API_URL"
+API_URL =os.getenv("RENDER_API_URL")
 
 print("Starting fake ESP32 Hardware Stream...")
 battery = 100
