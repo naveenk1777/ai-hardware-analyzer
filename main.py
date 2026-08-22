@@ -10,6 +10,7 @@ from sqlalchemy.future import select
 from analyzewithai import analyzewithai
 import logging
 import os
+from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -17,8 +18,8 @@ logger = logging.getLogger(__name__)
 api_key_header = APIKeyHeader(name="X-Hardware-Key")
 
 def verify_hardware_key(api_key: str = Security(api_key_header)):
-    expected_key = os.getenv("HARDWARE_API_KEY", "dev-secret-key-123") 
-    if api_key != expected_key:
+    expected_key = os.getenv("HARDWARE_API_KEY") 
+    if not expected_key or api_key != expected_key:
         logger.warning("Unauthorized access attempt blocked!")
         raise HTTPException(status_code=401, detail="Invalid Hardware API Key")
 
