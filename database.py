@@ -13,18 +13,19 @@ class Base(DeclarativeBase):
     pass
 
 class Sensortelemetry(Base):
-    __tablename__= "Sensor_data"
+    __tablename__= "Sensor_data_v2"
     id= Column(Integer,primary_key=True,index=True)
     device_id=Column(String,index=True)
-    batteryper=Column(Integer)
-    irstus=Column(Boolean)
+    battery_percent=Column(Integer)
+    ir_status=Column(Boolean)
     timestamp=Column(DateTime, default=datetime.datetime.utcnow)
     
-class Devicehealth():
-    __tablename__="Device_health"
+class Devicehealth(Base):
+    __tablename__="Device_health_v2"
     id= Column(Integer,primary_key=True,index=True)
     device_id=Column(String,index=True)
-    fault_detected=Column(Integer)
+    fault_detected=Column(Boolean)
     fault_reason=Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
 
