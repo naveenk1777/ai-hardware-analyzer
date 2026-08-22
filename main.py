@@ -1,6 +1,6 @@
 from fastapi import FastAPI,Depends
 from typing import Annotated
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from sqlalchemy import future
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import Base,engine,Asyncsessionlocal,Sensortelemetry,Devicehealth
@@ -26,7 +26,7 @@ dbsession=Annotated[AsyncSession, Depends(get_db)]
 
 class telemetrypayload(BaseModel):
     device_id:str
-    batteryper:int
+    batteryper:int = Field(ge=0, le=100)
     irstus:bool
 
 @app.post("/api/telemetry")
@@ -34,7 +34,7 @@ async def ingestdata(payload:telemetrypayload,db:dbsession):
     new_record=Sensortelemetry(device_id=payload.device_id,batteryper=payload.batteryper,irstus=payload.irstus)
     db.add(new_record)
     await db.commit()
-    return ("sensor data entered in database")
+    return {"status": "ok", "message": "sensor data entered in database"}
 
 
 @app.post("/api/diagnose/{device_id}")
@@ -53,6 +53,14 @@ async def run_diagnostics(device_id:str,db:dbsession):
     print("Sending telemetry to AI for analysis...")
 
     ai_verdict = analyzewithai(formatted_data)
+
+    health_record = Devicehealth(
+        device_id=device_id,
+        fault_detected=ai_verdict.fault_detected,
+        fault_reason=ai_verdict.fault_reason
+    )
+    db.add(health_record)
+    await db.commit()
     
     return {
         "ai_diagnosis": ai_verdict,
