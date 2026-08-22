@@ -11,8 +11,8 @@ battery = 100
 while True:
     payload = {
         "device_id": "HELMET_ESP32_01",
-        "irstus": random.choice([True, False, False]), # Mostly false
-        "batteryper": battery
+        "ir_status": random.choice([True, False, False]), 
+        "battery_percent": battery
     }
     
     try:
