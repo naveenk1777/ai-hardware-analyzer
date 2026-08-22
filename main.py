@@ -1,4 +1,5 @@
-from fastapi import FastAPI,Depends,HTTPException
+from fastapi import FastAPI,Depends,HTTPException,Security
+from fastapi.security import APIKeyHeader
 from typing import Annotated
 from pydantic import BaseModel,Field
 from sqlalchemy import future
@@ -7,8 +8,19 @@ from database import Base,engine,Asyncsessionlocal,Sensortelemetry,Devicehealth
 from contextlib import asynccontextmanager
 from sqlalchemy.future import select
 from analyzewithai import analyzewithai
+import logging
+import os
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
+api_key_header = APIKeyHeader(name="X-Hardware-Key")
+
+def verify_hardware_key(api_key: str = Security(api_key_header)):
+    expected_key = os.getenv("HARDWARE_API_KEY", "dev-secret-key-123") 
+    if api_key != expected_key:
+        logger.warning("Unauthorized access attempt blocked!")
+        raise HTTPException(status_code=401, detail="Invalid Hardware API Key")
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -29,11 +41,16 @@ class telemetrypayload(BaseModel):
     batteryper:int = Field(ge=0, le=100)
     irstus:bool
 
-@app.post("/api/telemetry")
+@app.post("/api/telemetry", dependencies=[Depends(verify_hardware_key)])
 async def ingestdata(payload:telemetrypayload,db:dbsession):
-    new_record=Sensortelemetry(device_id=payload.device_id,batteryper=payload.batteryper,irstus=payload.irstus)
+    new_record=Sensortelemetry(
+        device_id=payload.device_id,
+        battery_percent=payload.battery_percent,
+        ir_status=payload.ir_status
+    )
     db.add(new_record)
     await db.commit()
+    logger.info(f"Telemetry saved for {payload.device_id}") 
     return {"status": "ok", "message": "sensor data entered in database"}
 
 
