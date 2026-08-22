@@ -39,8 +39,8 @@ dbsession=Annotated[AsyncSession, Depends(get_db)]
 
 class telemetrypayload(BaseModel):
     device_id:str
-    batteryper:int = Field(ge=0, le=100)
-    irstus:bool
+    battery_percent:int = Field(ge=0, le=100)
+    ir_status:bool
 
 @app.post("/api/telemetry", dependencies=[Depends(verify_hardware_key)])
 async def ingestdata(payload:telemetrypayload,db:dbsession):
@@ -71,7 +71,7 @@ async def run_diagnostics(device_id:str,db:dbsession):
                 raise HTTPException(status_code=404, detail="No telemetry data found for this device.")
         
         formatted_data = [
-            {"device_id": d.device_id, "battery": d.batteryper, "irstus": d.irstus} 
+            {"device_id": d.device_id, "battery": d.battery_per, "irstatus": d.ir_status} 
             for d in telemetry
         ]
         print("Sending telemetry to AI for analysis...")
