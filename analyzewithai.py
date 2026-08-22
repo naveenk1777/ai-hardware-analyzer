@@ -9,14 +9,14 @@ class AIreport(BaseModel):
     fault_detected: bool
     fault_reason: str
 
-def analyzewithai(telemetry_array:list)->AIreport:
+async def analyzewithai(telemetry_array:list)->AIreport:
     prompt=f"""
     You are a embeded systems diagnostic machine
     analyze the last 100 readings of {telemetry_array}
     if ir_status is consistently true flag it as sensor blocked fault
     if battery_percent is dropping too fast flag it as power failure
     """
-    response=client.models.generate_content (
+    response = await client.aio.models.generate_content (
         model='gemini-2.5-flash',
         contents=prompt,
         config={
