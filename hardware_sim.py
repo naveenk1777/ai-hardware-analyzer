@@ -16,7 +16,7 @@ while True:
     }
     
     try:
-        response = requests.post(API_URL, json=payload)
+        response = requests.post(API_URL, json=payload, headers={"X-Hardware-Key": "dev-secret-key-123"})
         print(f"Sent: {payload} | Status: {response.status_code}")
     except Exception as e:
         print("API is offline.")
