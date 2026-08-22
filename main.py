@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Depends
+from fastapi import FastAPI,Depends,HTTPException
 from typing import Annotated
 from pydantic import BaseModel,Field
 from sqlalchemy import future
@@ -43,16 +43,21 @@ async def run_diagnostics(device_id:str,db:dbsession):
     select(Sensortelemetry)
     .where(Sensortelemetry.device_id == device_id)
     .order_by(Sensortelemetry.id.desc())
+    .limit(100)
     )
     result=await db.execute(query)
     telemetry=result.scalars().all()
+
+    if not telemetry:
+            raise HTTPException(status_code=404, detail="No telemetry data found for this device.")
+    
     formatted_data = [
         {"device_id": d.device_id, "battery": d.batteryper, "irstus": d.irstus} 
         for d in telemetry
     ]
     print("Sending telemetry to AI for analysis...")
 
-    ai_verdict = analyzewithai(formatted_data)
+    ai_verdict = await analyzewithai(formatted_data)
 
     health_record = Devicehealth(
         device_id=device_id,
@@ -67,5 +72,8 @@ async def run_diagnostics(device_id:str,db:dbsession):
         "data_points_analyzed": len(formatted_data),
         "raw_data": formatted_data
     }
-    
+
+    except Exception as e:
+        print(f"Error during diagnostics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error during diagnosis.")
 
