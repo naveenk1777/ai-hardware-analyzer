@@ -71,7 +71,7 @@ async def run_diagnostics(device_id:str,db:dbsession):
                 raise HTTPException(status_code=404, detail="No telemetry data found for this device.")
         
         formatted_data = [
-            {"device_id": d.device_id, "battery": d.battery_per, "irstatus": d.ir_status} 
+            {"device_id": d.device_id, "battery": d.battery_percent, "irstatus": d.ir_status} 
             for d in telemetry
         ]
         print("Sending telemetry to AI for analysis...")
